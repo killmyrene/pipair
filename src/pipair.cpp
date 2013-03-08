@@ -10,6 +10,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
+
+using namespace std;
 enum {
 	PIPE_READ = 0, PIPE_WRITE,
 };
@@ -94,70 +97,38 @@ int main(int argc, char *argv[]) {
 
 	/* we print w/e read from the pipe */
 
-	char *line = NULL;
+	//char *line = NULL;
 	size_t size;
 
 	char *map[100][100];
 	int i = 0;
 	int j = 0;
-	while (getline(&line, &size, stdin) > 0) {
-		line = strstr(line, "Call graph node for function");
-		if (line != NULL) {
+	string line;
+	while (getline(cin, line)) {
+		if (line.find("Call graph node for function") != string::npos) {
 
-			printf("%s", line); //debug
+			cout << line << endl; //debug;
 
 			//Got a line that contains string "call graph node
 			j = 0;
 
 			//get the call functions
-			while (getline(&line, &size, stdin) > 0 && strlen(line) > 1) {
-				line = strstr(line, "function ");
-				if (line != NULL) {
-					//get the function name
-					printf("%s", line); //debug
+			while (getline(cin, line) && line.length() > 1) {
+				size_t pos = line.find("function");
 
-					char* ptr = strstr(line, "'");
-					if (ptr != 0) {
-						int len = strlen(ptr + 2);
-						// the string exists
-						memmove(ptr, ptr + 1, strlen(ptr + 1));
-						// now null-terminate the string
-						ptr[len - 1] = '\0';
-					}
-					//store the function name in some hash table
-					/*
-					long len = strlen(ptr) + 1;
-					char func_name[len];
-					//make new string
-					strcpy(func_name, ptr);
-					map[i][j] = func_name;
-					*/
+				if (pos != string::npos) {
+					//get function name and remove quotes
+					line.erase(0, pos + 9);
+					line.replace(0,1,"");
+					line.replace(line.length() - 1, 1, "");
+
+					cout << line << endl; //debug
+					//at some point store these in the hash table
 					j++;
 				}
 			}
-			//remove data only if there are only 0 or 1 data in it (meaning no pairs)
-			if (j < 2) {
-				map[i][0] ="";
-				map[i][1] ="";
-			} else {
-				i++;
-			}
-
 		}
 	}
-
-	/*
-	printf("\nPrint map\n");
-	for (i = 0; i < 5; i++) {
-		for (j = 0; j < 5; j++) {
-			if (map[i][j]) {
-				printf("map[%d][%d] = %s\n", i, j, map[i][j]);
-			}
-		}
-
-	}
-	*/
-
 	//print something out
 	/*
 	 char* func_name;

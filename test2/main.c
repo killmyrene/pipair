@@ -41,6 +41,7 @@ void scope2() {
 void scope3() {
   A();
   B();
+ B();
 }
 
 void scope4() {
