@@ -128,7 +128,14 @@ int main(int argc, char *argv[]) {
 
 		}else if (line.find("Call graph node for function") != string::npos) { //find node to extract function names
 			foundNode = true;
-			cout << line << endl; //debug;
+			//get the call function name
+			size_t pos = line.find("'");
+			//Assume that it exist
+			line.erase(0, pos + 1);
+			pos = line.find("'");
+			line.erase(pos, line.length() - 1);
+
+			cout << "Call graph " <<  line << endl; //debug;
 			j = 0;
 
 		}
