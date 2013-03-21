@@ -201,6 +201,9 @@ int main(int argc, char *argv[]) {
 			return 1;
 		}
 
+		//close stdout
+		fclose(stdout);
+
 		/* print something to stderr */
 		//fprintf(stderr, "This is child, just before spawning opt with %s.\n",
 		//		filename);
@@ -228,17 +231,6 @@ int main(int argc, char *argv[]) {
 	}
 
 	/* we print w/e read from the pipe */
-
-
-	/* close the write end, since we only read */
-	close(pipe_callgraph[PIPE_WRITE]);
-
-	/* since we don't need stdin, we simply replace stdin with the pipe */
-	if (dup2(pipe_callgraph[PIPE_READ], STDIN_FILENO) < 0) {
-		perror("dup2 pipe_callgraph");
-		return 1;
-	}
-
 
 	size_t size;
 
