@@ -41,7 +41,9 @@ bool containsElem(vs list, string value) {
 
 bool containsElem(vi list, int value) {
 	for (vi::iterator it = list.begin(); it != list.end(); it++) {
+
 		if (*it == value) {
+
 			return true;
 		}
 	}
@@ -66,7 +68,9 @@ struct CGN {
 		return containsElem(pairs, hash);
 	}
 	void addFunctionUse(string fun_name) {
-		function_uses.push_back(fun_name);
+		if (!containsElem(function_uses, fun_name)){
+			function_uses.push_back(fun_name);
+		}
 	}
 	void addPairs(int hash) {
 		if(!containsElem(pairs, hash)){
@@ -96,7 +100,6 @@ struct FuncUse {
 
 	void addPair(int hash) {
 		if (!containsElem(pairs, hash)) {
-			//cerr << "Adding pair [" << function_name << "] " << hash << endl;
 			pairs.push_back(hash);
 		}
 	}
@@ -226,31 +229,6 @@ int main(int argc, char *argv[]) {
 
 	/* we print w/e read from the pipe */
 
-	 //TEST
-	/*
-	 cerr << generateHash("A") << endl;
-	 cerr << generateHash("B") << endl;
-	 cerr << generateHash("B C") << endl;
-	 cerr << generateHash("C B") << endl;
-	 cerr << generateHash("A D") << endl;
-
-
-	 cerr << generateHashPair("scope2", "scope5") << endl;
-	 cerr << generateHashPair("scope3" , "scope4") << endl;
-
-	 return 0;
-
-	 cerr << generateHash("scope3") << endl;
-	 cerr << generateHash("scope4") << endl;
-	 cerr << generateHash("scope3 scope4") << endl;
-	 cerr << generateHash("scope4 scope3") << endl;
-
-	 cerr << generateHash("scope2") << endl;
-	 cerr << generateHash("scope5") << endl;
-	 cerr << generateHash("scope2 scope5") << endl;
-
-	 return 0;
-	 */
 
 	size_t size;
 
@@ -268,7 +246,13 @@ int main(int argc, char *argv[]) {
 
 		if (line.length() <= 1) {
 			foundNode = false; //find next node if line only contains a space
-			calls.push_back(call);
+
+			if (call.pairs.size() != 0){
+				calls.push_back(call);
+			}
+
+
+
 			//TODO:: update stuff
 		} else if (foundNode) {
 			//get function name
@@ -283,7 +267,6 @@ int main(int argc, char *argv[]) {
 				//check if it doesnt contain the stuff in stash
 				if (!containsElem(stash, line)) {
 					//update the support of the function use
-					cerr << line; //debug
 
 					str_hash = generateHash(line); //create hash
 					//update the support number
@@ -299,7 +282,6 @@ int main(int argc, char *argv[]) {
 					for (vs::iterator jt = stash.begin(); jt != stash.end();
 							jt++) {
 						string pr = *jt + " " + line;
-						cerr << " (" << pr << ") ";
 
 						//update the support number
 						pair_hash =generateHashPair(*jt, line);// generateHash(pr);
@@ -310,7 +292,6 @@ int main(int argc, char *argv[]) {
 							FuncUse use(pr);
 							pair_support_num[pair_hash] = use;
 						}
-						cerr << "-" << pair_hash;
 						pair_support_num[pair_hash].addCount();
 
 						int next_hash = generateHash(*jt);
@@ -320,17 +301,21 @@ int main(int argc, char *argv[]) {
 						support_num[next_hash].addPair(pair_hash);
 						support_num[str_hash].addPair(pair_hash);
 
+						call.addPairs(pair_hash);
+
 					}
-					cerr << endl;
 
 					//add the function name on the stash
 					stash.push_back(line);
+					call.addFunctionUse(line);
 
 				}
 
 			}
 
-		} else if (line.find("Call graph node for function") != string::npos) { //find node to extract function names
+			//find node to extract function names
+		} else if (line.find("Call graph node for function") != string::npos) {
+
 			foundNode = true;
 			//get the call function name
 			size_t pos = line.find("'");
@@ -339,8 +324,6 @@ int main(int argc, char *argv[]) {
 			pos = line.find("'");
 			line.erase(pos, line.length() - 1);
 
-			cerr << "Call graph " << line << endl; //debug;
-
 			call = CGN(line);
 
 			stash.clear();
@@ -348,16 +331,11 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-
 	//print something out
 	for (mif::iterator it = support_num.begin(); it != support_num.end();
 			it++) {
 		FuncUse single = it->second;
 		if (single.reachesSupportMinimun(support)) {
-			//cerr << "Support of " << it->second.function_name << " - "
-			//		<< it->second.support_num << endl;
-
-
 
 			vi p = it->second.getPairs();
 			for (int i = 0; i < p.size(); i++){
@@ -368,22 +346,23 @@ int main(int argc, char *argv[]) {
 				double conf_rate = pair.support_num * 1.0 / single.support_num;
 				if (conf_rate >= confidence && conf_rate != 1){
 					conf_rate *= 100;
-					printf("bug: %s in __ pairs (%s), support: %d, confidence %.2f\%\n", single.function_name.c_str(), pair.function_name.c_str(), pair.support_num, conf_rate);
+
+					//search for the functions that doesnt contain the pair
+					for (vg::iterator jt = calls.begin();  jt!= calls.end(); jt++){
+						if (jt->containsFunctionName(single.function_name) &&
+								!jt->containPairs(p[i])){
+							string call_name = jt->call_fun_name;
+							printf("bug: %s in %s, pair: (%s), support: %d, confidence: %.2f\%\n", single.function_name.c_str(), call_name.c_str(), pair.function_name.c_str(), pair.support_num, conf_rate);
+						}
+
+					}
+
+
 				}
 
 			}
 		}
 	}
-
-	/*
-	for (mif::iterator it = pair_support_num.begin();
-			it != pair_support_num.end(); it++) {
-		if (it->second.reachesSupportMinimun(support)) {
-			cerr << "Support of " << it->second.function_name << " - "
-					<< it->second.support_num << endl;
-		}
-	}
-	*/
 
 	/* "That's all folks." */
 	return 0;
