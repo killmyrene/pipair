@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
+#include <locale>
 
 using namespace std;
 enum {
@@ -104,31 +105,35 @@ int main(int argc, char *argv[]) {
 	int i = 0;
 	int j = 0;
 	string line;
+	bool foundNode = false;
 	while (getline(cin, line)) {
-		if (line.find("Call graph node for function") != string::npos) {
 
+		if (line.length() <= 1){
+			foundNode = false;//find next node if line only contains a space
+			//TODO:: update stuff
+		}else if (foundNode){
+			//get function name
+			size_t pos = line.find("function");
+
+			if (pos != string::npos) {
+				//get function name and remove quotes
+				line.erase(0, pos + 9);
+				line.replace(0,1,"");
+				line.replace(line.length() - 1, 1, "");
+
+				cout << line << endl; //debug
+				//at some point store these in the hash table
+				j++;
+			}
+
+		}else if (line.find("Call graph node for function") != string::npos) { //find node to extract function names
+			foundNode = true;
 			cout << line << endl; //debug;
-
-			//Got a line that contains string "call graph node
 			j = 0;
 
-			//get the call functions
-			while (getline(cin, line) && line.length() > 1) {
-				size_t pos = line.find("function");
-
-				if (pos != string::npos) {
-					//get function name and remove quotes
-					line.erase(0, pos + 9);
-					line.replace(0,1,"");
-					line.replace(line.length() - 1, 1, "");
-
-					cout << line << endl; //debug
-					//at some point store these in the hash table
-					j++;
-				}
-			}
 		}
 	}
+
 	//print something out
 	/*
 	 char* func_name;
@@ -144,3 +149,11 @@ int main(int argc, char *argv[]) {
 	return 0;
 
 }
+//Generate hash code from a string for faster access in map
+long generateHash(string str) {
+	locale loc;
+	const collate<char>&coll = use_facet<collate<char> >(loc);
+	long hash = coll.hash(str.data(), str.data() + str.length());
+	return hash;
+}
+
