@@ -27,6 +27,15 @@ typedef vector<string> vs;
 typedef vector<int> vi;
 
 
+bool containsElem(vs list, string value){
+	for (vector<string>::iterator it = list.begin(); it != list.end(); it++){
+		if (*it == value){
+			return true;
+		}
+	}
+	return false;
+}
+
 //Call graph node
 struct CGN{
 	string call_fun_name; //name of the call graph function
@@ -36,9 +45,11 @@ struct CGN{
 	bool containsFunctionName(string fun_name){
 
 	}
-	addFunctionUse(string fun_name)
+	void addFunctionUse(string fun_name){
 
-	getPairs(){
+	}
+
+	vs getPairs(){
 		return pairs;
 	}
 
@@ -75,14 +86,6 @@ long generateHash(string str) {
 	const collate<char>&coll = use_facet<collate<char> >(loc);
 	long hash = coll.hash(str.data(), str.data() + str.length() );
 	return hash;
-}
-bool containsElem(vs list, string value){
-	for (vector<string>::iterator it = list.begin(); it != list.end(); it++){
-		if (*it == value){
-			return true;
-		}
-	}
-	return false;
 }
 
 bool containsElem(msi m, string value){
