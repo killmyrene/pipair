@@ -20,12 +20,13 @@ using namespace std;
 enum {
 	PIPE_READ = 0, PIPE_WRITE,
 };
+struct FuncUse;
 
 typedef map<string, int> msi;
 typedef map<int, int> mii;
 typedef vector<string> vs;
 typedef vector<int> vi;
-
+typedef map<int, FuncUse> mif;
 
 bool containsElem(vs list, string value){
 	for (vector<string>::iterator it = list.begin(); it != list.end(); it++){
@@ -64,7 +65,9 @@ struct FuncUse{
 	int support_num;
 	vs pairs; //links to pairs that uses the function name
 
-	FuncUse(string name) : function_name(name), support_num(0){
+
+
+	FuncUse(string name = "") : function_name(name), support_num(0){
 
 	}
 
@@ -86,7 +89,7 @@ struct FuncUse{
 int generateHash(string str) {
 	long hash= 0;
 	for(string::const_iterator it=str.begin(); it!=str.end(); ++it) {
-	  hash += *it; //hash << 1 | (*it - offset);
+		hash += *it; //hash << 1 | (*it - offset);
 	}
 	return hash;
 }
@@ -187,9 +190,11 @@ int main(int argc, char *argv[]) {
 
 	size_t size;
 
-	msi support_num;
-	msi pair_support_num;
+	mif support_num;
+	mif pair_support_num;
 	vs stash;
+
+	int str_hash;
 
 	string line;
 	bool foundNode = false;
@@ -214,8 +219,15 @@ int main(int argc, char *argv[]) {
 					//update the support of the function use
 					cout << line; //debug
 
+					str_hash = generateHash(line); //create hash
 					//update the support number
-					support_num[line] += 1;
+					if(support_num.find(str_hash) == support_num.end()){
+						//if not found, make new FuncUse
+						FuncUse use(line);
+						support_num[str_hash] = use;
+					}
+
+					support_num[str_hash].addCount();
 
 					//make pairs
 					for (vs::iterator jt = stash.begin(); jt != stash.end(); jt++){
@@ -223,7 +235,14 @@ int main(int argc, char *argv[]) {
 						cout << " (" << pr << ")";
 
 						//update the support number
-						pair_support_num[pr] += 1;
+						str_hash = generateHash(pr);
+						//update the support number
+						if(pair_support_num.find(str_hash) == pair_support_num.end()){
+							//if not found, make new FuncUse
+							FuncUse use(pr);
+							pair_support_num[str_hash] = use;
+						}
+						pair_support_num[str_hash].addCount();
 
 
 					}
@@ -255,17 +274,17 @@ int main(int argc, char *argv[]) {
 
 	//print something out
 
-	for (msi::iterator it = support_num.begin(); it != support_num.end(); it++){
-		if (it->second >= support){
-			cerr << "Support of " << it->first << " - " << it->second << endl;
+	for (mif::iterator it = support_num.begin(); it != support_num.end(); it++){
+		if (it->second.support_num >= support){
+			cerr << "Support of " << it->second.function_name << " - " << it->second.support_num << endl;
 		}
 	}
 
 
-	for (msi::iterator it = pair_support_num.begin(); it != pair_support_num.end(); it++){
-		//if (it->second >= support){
-			cerr << "Support of " << it->first << " - " << it->second << endl;
-		//}
+	for (mif::iterator it = pair_support_num.begin(); it != pair_support_num.end(); it++){
+		if (it->second.support_num >= support){
+			cerr << "Support of " << it->second.function_name << " - " << it->second.support_num << endl;
+		}
 	}
 
 	/* "That's all folks." */
