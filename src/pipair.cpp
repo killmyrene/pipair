@@ -43,13 +43,20 @@ struct CGN{
 	vs function_uses; //list of all function uses in the call graph
 	vs pairs; //the pairs made while adding the function use
 
-	CGN(string name): call_fun_name(name){}
+	CGN(string name = ""): call_fun_name(name){}
 
 	bool containsFunctionName(string fun_name){
+		return containsElem(function_uses, fun_name);
+	}
 
+	bool containPairs(string pair){
+		return containsElem(pairs, pair);
 	}
 	void addFunctionUse(string fun_name){
-
+		function_uses.push_back(fun_name);
+	}
+	void addPairs(string pair){
+		pairs.push_back(pair);
 	}
 
 	vs getPairs(){
@@ -89,7 +96,7 @@ struct FuncUse{
 int generateHash(string str) {
 	long hash= 0;
 	for(string::const_iterator it=str.begin(); it!=str.end(); ++it) {
-		hash += *it; //hash << 1 | (*it - offset);
+		hash += *it;
 	}
 	return hash;
 }
