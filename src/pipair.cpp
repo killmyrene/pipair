@@ -27,6 +27,48 @@ typedef vector<string> vs;
 typedef vector<int> vi;
 
 
+//Call graph node
+struct CGN{
+	string call_fun_name; //name of the call graph function
+	vs function_uses; //list of all function uses in the call graph
+	vs pairs; //the pairs made while adding the function use
+
+	bool containsFunctionName(string fun_name){
+
+	}
+	addFunctionUse(string fun_name)
+
+	getPairs(){
+		return pairs;
+	}
+
+
+};
+
+//Function use struct
+struct FU{
+	string function_name;
+	int support_num;
+	vs pairs; //links to pairs that uses the function name
+
+	FU(string name) : function_name(name), support_num(0){
+
+	}
+
+	void addCount(){
+		support_num++;
+	}
+
+	void addPair(string other){
+		other = function_name + " " + other;
+		if (!containsElem(pairs, other)){
+			pairs.push_back(other);
+		}
+	}
+
+};
+
+
 //Generate hash code from a string for faster access in map
 long generateHash(string str) {
 	locale loc;
@@ -142,16 +184,13 @@ int main(int argc, char *argv[]) {
 	msi pair_support_num;
 	vs stash;
 
-
-	int i = 0;
-	int j = 0;
 	string line;
 	bool foundNode = false;
 	while (getline(cin, line)) {
 
 		if (line.length() <= 1){
 			foundNode = false;//find next node if line only contains a space
-			cout << endl;
+
 			//TODO:: update stuff
 		}else if (foundNode){
 			//get function name
@@ -163,12 +202,10 @@ int main(int argc, char *argv[]) {
 				line.replace(0,1,"");
 				line.replace(line.length() - 1, 1, "");
 
-				//at some point store these in the hash table
-				j++;
-
 				//check if it doesnt contain the stuff in stash
 				if (!containsElem(stash, line)){
-					cout << line << ", "; //debug
+					//update the support of the function use
+					cout << line << endl; //debug
 					stash.push_back(line);
 
 					//update the support number
@@ -194,7 +231,7 @@ int main(int argc, char *argv[]) {
 			line.erase(pos, line.length() - 1);
 
 			cout << "Call graph " <<  line << endl; //debug;
-			j = 0;
+
 
 			stash.clear();
 
@@ -204,7 +241,9 @@ int main(int argc, char *argv[]) {
 	//print something out
 
 	for (msi::iterator it = support_num.begin(); it != support_num.end(); it++){
-		cerr << "Support of " << it->first << " - " << it->second << endl;
+		if (it->second >= support){
+			cerr << "Support of " << it->first << " - " << it->second << endl;
+		}
 	}
 	/*
 	 char* func_name;
