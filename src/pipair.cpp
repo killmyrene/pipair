@@ -42,6 +42,8 @@ struct CGN{
 	vs function_uses; //list of all function uses in the call graph
 	vs pairs; //the pairs made while adding the function use
 
+	CGN(string name): call_fun_name(name){}
+
 	bool containsFunctionName(string fun_name){
 
 	}
@@ -57,12 +59,12 @@ struct CGN{
 };
 
 //Function use struct
-struct FU{
+struct FuncUse{
 	string function_name;
 	int support_num;
 	vs pairs; //links to pairs that uses the function name
 
-	FU(string name) : function_name(name), support_num(0){
+	FuncUse(string name) : function_name(name), support_num(0){
 
 	}
 
@@ -180,7 +182,11 @@ int main(int argc, char *argv[]) {
 
 	/* we print w/e read from the pipe */
 
-	//char *line = NULL;
+
+	//TEST
+	cerr << generateHash("A") << endl;
+	cerr << generateHash("B")
+
 	size_t size;
 
 	msi support_num;
@@ -208,8 +214,7 @@ int main(int argc, char *argv[]) {
 				//check if it doesnt contain the stuff in stash
 				if (!containsElem(stash, line)){
 					//update the support of the function use
-					cout << line << endl; //debug
-					stash.push_back(line);
+					cout << line; //debug
 
 					//update the support number
 					msi::iterator it = support_num.find(line);
@@ -219,6 +224,27 @@ int main(int argc, char *argv[]) {
 					}else{
 						support_num[line] = 1;
 					}
+
+					//make pairs
+					for (vs::iterator jt = stash.begin(); jt != stash.end(); jt++){
+						string pr = *jt + " " + line;
+						cout << " (" << pr << ")";
+
+						//update the support number
+						it = pair_support_num.find(pr);
+						if (it != pair_support_num.end()){
+							//if found add 1
+							pair_support_num[pr] += 1;
+						}else{
+							pair_support_num[pr] = 1;
+						}
+
+
+					}
+					cout << endl;
+
+					//add the function name on the stash
+					stash.push_back(line);
 
 				}
 
@@ -248,15 +274,13 @@ int main(int argc, char *argv[]) {
 			cerr << "Support of " << it->first << " - " << it->second << endl;
 		}
 	}
-	/*
-	 char* func_name;
-	 char* func_loc;
-	 char* pair_1;
-	 char* pair_2;
-	 int func_support;
-	 double func_confidence;
-	 printf("bug %s in %s. pair(%s %s), support: %d confidence: %.2f\%\n" , func_name, func_loc, pair_1, pair_2, func_support_ func_confidence);
-	 */
+
+
+	for (msi::iterator it = pair_support_num.begin(); it != pair_support_num.end(); it++){
+		//if (it->second >= support){
+			cerr << "Support of " << it->first << " - " << it->second << endl;
+		//}
+	}
 
 	/* "That's all folks." */
 	return 0;
