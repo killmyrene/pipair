@@ -57,7 +57,7 @@ struct CGN {
 	vi pairs; //the hashed pairs
 
 	CGN(string name = "") :
-			call_fun_name(name) {
+		call_fun_name(name) {
 	}
 
 	bool containsFunctionName(string fun_name) {
@@ -91,7 +91,7 @@ struct FuncUse {
 	vi pairs; //links to hashed pairs that uses the function name
 
 	FuncUse(string name = "") :
-			function_name(name), support_num(0) {
+		function_name(name), support_num(0) {
 	}
 
 	void addCount() {
@@ -117,9 +117,9 @@ struct FuncUse {
 int generateHash(string str) {
 
 	long hash= 0;
-	 for(int i = 0; i < str.size(); i++){// string::const_iterator it=str.begin(); it!=str.end(); ++it) {
-	 hash += str[i] * 5 * ( i + 2);
-	 }
+	for(int i = 0; i < str.size(); i++){// string::const_iterator it=str.begin(); it!=str.end(); ++it) {
+		hash += str[i] * 5 * ( i + 2);
+	}
 
 
 	/*
@@ -128,7 +128,7 @@ int generateHash(string str) {
 	const collate<char>& coll = use_facet<collate<char> >(loc);
 
 	long hash = coll.hash(str.data(), str.data() + str.length());
-	*/
+	 */
 	return hash;
 }
 //Generate hash code from 2 strings by multiplying two hash from two strings together
@@ -202,8 +202,8 @@ int main(int argc, char *argv[]) {
 		}
 
 		/* print something to stderr */
-		fprintf(stderr, "This is child, just before spawning opt with %s.\n",
-				filename);
+		//fprintf(stderr, "This is child, just before spawning opt with %s.\n",
+		//		filename);
 
 		/* spawn opt */
 		if (execl("/usr/local/bin/opt", "opt", "-print-callgraph", filename,
@@ -230,6 +230,16 @@ int main(int argc, char *argv[]) {
 	/* we print w/e read from the pipe */
 
 
+	/* close the write end, since we only read */
+	close(pipe_callgraph[PIPE_WRITE]);
+
+	/* since we don't need stdin, we simply replace stdin with the pipe */
+	if (dup2(pipe_callgraph[PIPE_READ], STDIN_FILENO) < 0) {
+		perror("dup2 pipe_callgraph");
+		return 1;
+	}
+
+
 	size_t size;
 
 	mif support_num;
@@ -242,6 +252,7 @@ int main(int argc, char *argv[]) {
 
 	string line;
 	bool foundNode = false;
+
 	while (getline(cin, line)) {
 
 		if (line.length() <= 1) {
@@ -316,6 +327,7 @@ int main(int argc, char *argv[]) {
 			//find node to extract function names
 		} else if (line.find("Call graph node for function") != string::npos) {
 
+
 			foundNode = true;
 			//get the call function name
 			size_t pos = line.find("'");
@@ -329,6 +341,9 @@ int main(int argc, char *argv[]) {
 			stash.clear();
 
 		}
+
+		line.clear();
+
 	}
 
 	//print something out
