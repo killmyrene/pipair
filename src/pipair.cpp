@@ -83,10 +83,11 @@ struct FuncUse{
 
 
 //Generate hash code from a string for faster access in map
-long generateHash(string str) {
-	locale loc;
-	const collate<char>&coll = use_facet<collate<char> >(loc);
-	long hash = coll.hash(str.data(), str.data() + str.length() );
+int generateHash(string str) {
+	long hash= 0;
+	for(string::const_iterator it=str.begin(); it!=str.end(); ++it) {
+	  hash += *it; //hash << 1 | (*it - offset);
+	}
 	return hash;
 }
 
@@ -183,9 +184,6 @@ int main(int argc, char *argv[]) {
 	/* we print w/e read from the pipe */
 
 
-	//TEST
-	cerr << generateHash("A") << endl;
-	cerr << generateHash("B")
 
 	size_t size;
 
@@ -217,13 +215,7 @@ int main(int argc, char *argv[]) {
 					cout << line; //debug
 
 					//update the support number
-					msi::iterator it = support_num.find(line);
-					if (it != support_num.end()){
-						//if found add 1
-						support_num[line] += 1;
-					}else{
-						support_num[line] = 1;
-					}
+					support_num[line] += 1;
 
 					//make pairs
 					for (vs::iterator jt = stash.begin(); jt != stash.end(); jt++){
@@ -231,13 +223,7 @@ int main(int argc, char *argv[]) {
 						cout << " (" << pr << ")";
 
 						//update the support number
-						it = pair_support_num.find(pr);
-						if (it != pair_support_num.end()){
-							//if found add 1
-							pair_support_num[pr] += 1;
-						}else{
-							pair_support_num[pr] = 1;
-						}
+						pair_support_num[pr] += 1;
 
 
 					}
