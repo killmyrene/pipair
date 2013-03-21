@@ -13,10 +13,47 @@
 #include <iostream>
 #include <locale>
 
+#include <vector>
+#include <map>
+
 using namespace std;
 enum {
 	PIPE_READ = 0, PIPE_WRITE,
 };
+
+typedef map<string, int> msi;
+typedef map<int, int> mii;
+typedef vector<string> vs;
+typedef vector<int> vi;
+
+
+//Generate hash code from a string for faster access in map
+long generateHash(string str) {
+	locale loc;
+	const collate<char>&coll = use_facet<collate<char> >(loc);
+	long hash = coll.hash(str.data(), str.data() + str.length() );
+	return hash;
+}
+bool containsElem(vs list, string value){
+	for (vector<string>::iterator it = list.begin(); it != list.end(); it++){
+		if (*it == value){
+			return true;
+		}
+	}
+	return false;
+}
+
+bool containsElem(msi m, string value){
+	map<string, int>::iterator it = m.find(value);
+
+	if (it != m.end()){
+		//if found return true
+		return true;
+	}
+	return false;
+}
+
+
 
 //TODO: code based from the T2 demo
 int main(int argc, char *argv[]) {
@@ -101,7 +138,11 @@ int main(int argc, char *argv[]) {
 	//char *line = NULL;
 	size_t size;
 
-	char *map[100][100];
+	msi support_num;
+	msi pair_support_num;
+	vs stash;
+
+
 	int i = 0;
 	int j = 0;
 	string line;
@@ -110,6 +151,7 @@ int main(int argc, char *argv[]) {
 
 		if (line.length() <= 1){
 			foundNode = false;//find next node if line only contains a space
+			cout << endl;
 			//TODO:: update stuff
 		}else if (foundNode){
 			//get function name
@@ -121,9 +163,25 @@ int main(int argc, char *argv[]) {
 				line.replace(0,1,"");
 				line.replace(line.length() - 1, 1, "");
 
-				cout << line << endl; //debug
 				//at some point store these in the hash table
 				j++;
+
+				//check if it doesnt contain the stuff in stash
+				if (!containsElem(stash, line)){
+					cout << line << ", "; //debug
+					stash.push_back(line);
+
+					//update the support number
+					msi::iterator it = support_num.find(line);
+					if (it != support_num.end()){
+						//if found add 1
+						support_num[line] += 1;
+					}else{
+						support_num[line] = 1;
+					}
+
+				}
+
 			}
 
 		}else if (line.find("Call graph node for function") != string::npos) { //find node to extract function names
@@ -138,10 +196,16 @@ int main(int argc, char *argv[]) {
 			cout << "Call graph " <<  line << endl; //debug;
 			j = 0;
 
+			stash.clear();
+
 		}
 	}
 
 	//print something out
+
+	for (msi::iterator it = support_num.begin(); it != support_num.end(); it++){
+		cerr << "Support of " << it->first << " - " << it->second << endl;
+	}
 	/*
 	 char* func_name;
 	 char* func_loc;
@@ -155,12 +219,5 @@ int main(int argc, char *argv[]) {
 	/* "That's all folks." */
 	return 0;
 
-}
-//Generate hash code from a string for faster access in map
-long generateHash(string str) {
-	locale loc;
-	const collate<char>&coll = use_facet<collate<char> >(loc);
-	long hash = coll.hash(str.data(), str.data() + str.length());
-	return hash;
 }
 
