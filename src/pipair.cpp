@@ -159,7 +159,7 @@ int main(int argc, char *argv[]) {
 	int opt_pid;
 
 	int support = 3;
-	double confidence = .65;
+	double confidence = 65;
 	char* filename = "";
 
 	//std::stringstream s; //data conversion
@@ -351,8 +351,8 @@ int main(int argc, char *argv[]) {
 					continue;
 				}
 				double conf_rate = pair.support_num * 1.0 / single.support_num;
-				if (conf_rate >= confidence && conf_rate != 1){
-					conf_rate *= 100;
+				conf_rate *= 100;
+				if (conf_rate >= confidence && conf_rate != 100){
 
 					//search for the functions that doesnt contain the pair
 					for (vg::iterator jt = calls.begin();  jt!= calls.end(); jt++){
