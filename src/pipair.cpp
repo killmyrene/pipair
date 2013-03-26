@@ -128,6 +128,7 @@ struct FuncUse {
 //Generate hash code from a string for faster access in map
 long  generateHash(string str) {
 
+	/*
 	long hash= 0;
 	for(int i = 0; i < str.size(); i++){// string::const_iterator it=str.begin(); it!=str.end(); ++it) {
 		hash += str[i] * (i + 5);
@@ -136,12 +137,15 @@ long  generateHash(string str) {
 	//random stuff to add
 
 	hash *= str[0];
-
+	*/
+	 locale loc;                 // the "C" locale
+	 const collate<char>& coll = use_facet<collate<char> >(loc);
+	 long hash = coll.hash(str.data(),str.data()+str.length());
 
 	return hash;
 }
 //Generate hash code from 2 strings by multiplying two hash from two strings together
-//TODO: can potentially crash if the value overflows
+//TODO: can potentially crash or returns a negative if the value overflows
 long generateHashPair(string s1, string s2){
 	long h1 = generateHash(s1);
 	long h2 = generateHash(s2);
@@ -285,11 +289,6 @@ int main(int argc, char *argv[]) {
 					}
 					support_num[str_hash].addCount();
 
-				/*	if (str_hash == generateHash(debug)){
-						cerr << "Name " << line << " " << support_num[str_hash].support_num << " " << str_hash << endl;
-					}*/
-
-
 					//make pairs
 					for (vs::iterator jt = stash.begin(); jt != stash.end();
 							jt++) {
@@ -297,8 +296,6 @@ int main(int argc, char *argv[]) {
 						string pr;
 
 						string first, second;
-
-
 
 						//Sort two words
 						if (strcmp(jt->c_str(), line.c_str()) < 0){
@@ -316,7 +313,8 @@ int main(int argc, char *argv[]) {
 
 						//update the support number
 						pair_hash =generateHashPair(first, second);
-						//update the support number
+
+
 						if (pair_support_num.find(pair_hash)
 								== pair_support_num.end()) {
 							//if not found, make new FuncUse
@@ -333,12 +331,6 @@ int main(int argc, char *argv[]) {
 						support_num[str_hash].addPair(pair_hash);
 
 						call.addPairs(pair_hash);
-
-
-						/*if (pair_hash == 8290602319970 || pair_hash == 7393051972856){
-							cerr << "Pair of "<< pr << " " << pair_support_num[pair_hash].support_num <<  " " << pair_hash << endl;
-						}*/
-
 
 					}
 
@@ -400,16 +392,8 @@ int main(int argc, char *argv[]) {
 			double conf_rate = pair.support_num * 1.0 / single.support_num;
 			conf_rate *= 100;
 
-
-		/*	if (single.function_name == debug){
-				cerr <<pair.function_name << " " << pair.support_num << " at " << i << " " << p[i] << " conf_rate: " << conf_rate << endl;
-			}*/
-
-
 			if (conf_rate >= confidence && conf_rate < 100){
 				//NOTE: there is never a conf_rating that is higher than 100%
-
-
 
 				//search for the functions that doesnt contain the pair
 				for (vg::iterator jt = calls.begin();  jt!= calls.end(); jt++){
@@ -439,36 +423,6 @@ int main(int argc, char *argv[]) {
 		}
 
 	}
-
-	/*long hash = generateHash(debug);
-
-	cerr << support_num[hash].function_name << " " <<support_num[hash].support_num << " hash " << hash << endl;
-
-
-	long hash2 = generateHashPair(debug, "apr_array_push");
-	cerr <<  pair_support_num[hash2].function_name << " " <<pair_support_num[hash2].support_num << " hash " << hash2 << endl;
-*/
-
-
-	/*
-
-	//print out the single and double support
-	for(mif::iterator it = support_num.begin(); it != support_num.end(); it++){
-		FuncUse single= it->second;
-		if (single.reachesSupportMinimun(support)){
-			cerr << "Support for (" << single.function_name << ")-" << single.support_num << " hash " << it->first <<  endl;
-		}
-	}
-
-	for(mif::iterator it = pair_support_num.begin(); it != pair_support_num.end(); it++){
-		FuncUse doub= it->second;
-		if (doub.reachesSupportMinimun(support)){
-			cerr << "Support for (" << doub.function_name << ")-" << doub.support_num << " hash " << it->first <<  endl;
-		}
-	}
-*/
-
-
 
 	/* "That's all folks." */
 	return 0;
