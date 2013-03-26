@@ -402,11 +402,6 @@ int main(int argc, char *argv[]) {
 							!jt->containPairs(p[i]);
 
 
-					if (single.function_name == debug && jt->containsFunctionName(single.function_name)){
-						//jt->toString();
-						//cerr <<"Bi " << isContain << endl;
-					}
-
 					if (isContain){
 
 						string call_name = jt->call_fun_name;
